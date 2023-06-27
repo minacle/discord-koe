@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import aiohttp
-from asyncache import cached
+from asyncache import cachedmethod
 from cachetools import LFUCache
+from cachetools.keys import methodkey
 import json
 from shelved_cache import PersistentCache
 
@@ -11,7 +12,7 @@ from typing import Final
 
 class LanguageDetector:
 
-    ldcache: Final = (
+    _ldcache: Final = (
         PersistentCache(
             LFUCache,
             "ldcache",
@@ -46,7 +47,7 @@ class LanguageDetector:
         self._api_key = api_key
         self._url: str = f"https://translation.googleapis.com/language/translate/v2/detect?key={api_key}"
 
-    @cached(ldcache)
+    @cachedmethod(lambda self: LanguageDetector._ldcache, key=methodkey)
     async def detect(
         self,
         text: str,
