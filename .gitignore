@@ -1,0 +1,8 @@
+__pycache__/
+/.env
+/ldcache
+/vccache
+*.json
+*.yaml
+!voices.json
+!galiases.yaml

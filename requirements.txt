@@ -1,0 +1,12 @@
+aiohttp == 3.*
+asyncache == 0.3.*
+cachetools == 5.*
+discord.py == 2.*
+discord-markdown-ast-parser == 1.*
+ffmpeg-python == 0.2.*
+PyNaCl == 1.*
+PyYAML == 6.*
+python-dotenv == 1.*
+shelved-cache == 0.3.*
+types-cachetools == 5.*
+watchdog == 3.*
