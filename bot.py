@@ -47,8 +47,6 @@ class Bot(discord.Client):
         auth: Auth,
         **kwargs
     ) -> None:
-        # with suppress(AttributeError):
-        #     super(Bot, self).__init__(*args, intents=intents, **kwargs)
         super(Bot, self).__init__(*args, intents=intents, **kwargs)
         self.auth: Auth = auth
         self.ld: LanguageDetector = LanguageDetector(api_key=auth.google.api_key)
@@ -717,8 +715,6 @@ class Bot(discord.Client):
     async def on_ready(
         self
     ) -> None:
-        # with suppress(AttributeError):
-        #     await super(Bot, self).on_ready()
         self.vom = VOM()
         self.enabled_user_ids_lock = asyncio.Lock()
         self.user_config_lock = asyncio.Lock()
@@ -732,8 +728,6 @@ class Bot(discord.Client):
         self,
         message: discord.Message
     ) -> None:
-        # with suppress(AttributeError):
-        #     await super(Bot, self).on_message(message)
         if not isinstance(message.channel, discord.channel.VocalGuildChannel):
             return
         if message.author not in message.channel.members:
@@ -1120,8 +1114,6 @@ class Bot(discord.Client):
         before: discord.VoiceState,
         after: discord.VoiceState
     ) -> None:
-        # with suppress(AttributeError):
-        #     await super(Bot, self).on_voice_state_update(member, before, after)
         for voice_client in self.connected_voice_clients:
             if isinstance(voice_client, discord.VoiceClient):
                 if voice_client.channel == before.channel:

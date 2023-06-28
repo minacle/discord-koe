@@ -258,7 +258,6 @@ class VOM:
                 voice = await response.read()
         return voice
 
-    # @cachedmethod(lambda self: self._fvcache, key=methodkey)
     def filter_voices(
         self,
         language: Optional[str] = None,
