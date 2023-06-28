@@ -1,5 +1,13 @@
 # discord-koe
 
+Python 3.9.16 (PyPy 7.3.11) 에서 실행되도록 구현한 Discord용 TTS 봇입니다.
+
+*.python_version* 파일에 정의된 `discord-koe`는 아래와 같이 생성되었습니다.
+
+```sh
+pyenv virtualenv pypy3.9-7.3.11 discord-koe
+```
+
 실행하려면 아래 네 개의 환경 변수가 필요합니다.
 
 - *DISCORD_TOKEN*: 디스코드에서 작동할 봇의 토큰
