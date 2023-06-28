@@ -2,7 +2,7 @@
 
 Python 3.9.16 (PyPy 7.3.11) 에서 실행되도록 구현한 Discord용 TTS 봇입니다.
 
-*.python_version* 파일에 정의된 `discord-koe`는 아래와 같이 생성되었습니다.
+*.python-version* 파일에 정의된 `discord-koe`는 아래와 같이 생성되었습니다.
 
 ```sh
 pyenv virtualenv pypy3.9-7.3.11 discord-koe
