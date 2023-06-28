@@ -9,4 +9,5 @@ PyYAML == 6.*
 python-dotenv == 1.*
 shelved-cache == 0.3.*
 types-cachetools == 5.*
+typing-extensions == 4.*
 watchdog == 3.*
