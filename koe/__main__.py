@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import auth
-from auth import Auth
-from bot import Bot
+from . import auth
+from .auth import Auth
+from .bot import Bot
 
 import discord
 from dotenv import load_dotenv

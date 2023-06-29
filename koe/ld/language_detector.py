@@ -26,7 +26,7 @@ class LanguageDetector:
         /,
         *,
         api_key: str,
-        timeout: float = 2,
+        timeout: float = 3,
     ) -> None:
         self._api_key: str
         self._url: str

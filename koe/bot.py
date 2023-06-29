@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from auth import Auth
-from ld import *
-from vom import *
+from .auth import Auth
+from .ld import *
+from .vom import *
 
 import aiohttp
 import asyncio
