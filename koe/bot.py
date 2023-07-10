@@ -399,12 +399,17 @@ class Bot(discord.Client):
 
             async def log_error(
                 text: str,
-                e: Exception
+                e: Optional[Exception],
+                *,
+                log: bool = True,
+                send: bool = True,
             ) -> None:
-                print(f"{type(e)}: {e}")
-                traceback.print_exc()
-                with suppress(Exception):
-                    await message.channel.send(f"> ,,{text}\n{e}", reference=message, silent=True)
+                if e and log:
+                    print(f"{type(e)}: {e}")
+                    traceback.print_exc()
+                if send:
+                    with suppress(Exception):
+                        await message.channel.send(f"> ,,{text}\n{e}", reference=message, silent=True)
 
             voice_client = self.connected_voice_client(channel, discord.VoiceClient)
             if voice_client is not None:
@@ -421,7 +426,11 @@ class Bot(discord.Client):
             else:
                 print(f"Creating voice client for channel: {message.channel}")
                 cont = False
-                while True:
+                for _ in range(3):
+                    voice_client = self.voice_client(message.channel, discord.VoiceClient)
+                    if voice_client is not None:
+                        with suppress(Exception):
+                            await voice_client.disconnect(force=True)
                     try:
                         voice_client = await asyncio.wait_for(message.channel.connect(), timeout=10)
                         break
@@ -438,12 +447,20 @@ class Bot(discord.Client):
                                     await log_error(text, e)
                                     cont = True
                                     break
+                    except asyncio.TimeoutError as e:
+                        await log_error(text, e, send=False)
+                        continue
                     except Exception as e:
                         speaking_queue.pop(0)
                         cleanup(opus_file_descriptor, opus_file_name, audio)
                         await log_error(text, e)
                         cont = True
                         break
+                else:
+                    speaking_queue.pop(0)
+                    cleanup(opus_file_descriptor, opus_file_name, audio)
+                    await log_error(text, Exception("Failed to connect to voice channel."), log=False)
+                    cont = True
                 if cont:
                     await speak_lock.acquire()
                     continue
