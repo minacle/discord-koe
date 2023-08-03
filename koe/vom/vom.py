@@ -254,7 +254,7 @@ class VOM:
         }
         voice = None
         async with aiohttp.ClientSession() as session:
-            async with session.post(url, headers=headers, json=data, timeout=7, raise_for_status=True) as response:
+            async with session.post(url, headers=headers, json=data, timeout=8, raise_for_status=True) as response:
                 voice = await response.read()
         return voice
 
