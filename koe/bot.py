@@ -130,6 +130,12 @@ class Bot(discord.Client):
             return None
         if message.author.bot:
             return None
+        if isinstance(message.author, discord.Member):
+            if message.author.voice:
+                if message.author.voice.deaf or message.author.voice.self_deaf:
+                    return None
+            else:
+                return None
         if message.mentions or message.role_mentions:
             if re.match(r"^<@[!&]?\d+>", message.content.strip()):
                 return None
@@ -365,12 +371,25 @@ class Bot(discord.Client):
                 continue
             speaking_queue.append((*item, audio))
             speak_lock.release()
-            print(f"Speak: {opus_file_name}")
             speak_end_event = self.speak_end_events_map.get(channel)
             if not speak_end_event:
                 speak_end_event = asyncio.Event()
                 speak_end_event.set()
                 self.speak_end_events_map[message.channel] = speak_end_event
+
+            def speakable() -> bool:
+                author = message.author
+                if isinstance(author, discord.Member):
+                    if author.voice:
+                        if author.voice.channel != channel:
+                            return False
+                        elif author.voice.deaf or author.voice.self_deaf:
+                            return False
+                    else:
+                        return False
+                else:
+                    return False
+                return True
 
             def cleanup(
                 opus_file_descriptor: int,
@@ -415,6 +434,12 @@ class Bot(discord.Client):
             if voice_client is not None:
                 print(f"Found voice client for channel: {message.channel}")
                 await speak_end_event.wait()
+                if not speakable():
+                    speaking_queue.pop(0)
+                    cleanup(opus_file_descriptor, opus_file_name, audio)
+                    await speak_lock.acquire()
+                    continue
+                print(f"Speak: {opus_file_name}")
                 speak_end_event.clear()
                 try:
                     voice_client.play(audio, after=complete)
@@ -465,6 +490,12 @@ class Bot(discord.Client):
                     await speak_lock.acquire()
                     continue
                 await speak_end_event.wait()
+                if not speakable():
+                    speaking_queue.pop(0)
+                    cleanup(opus_file_descriptor, opus_file_name, audio)
+                    await speak_lock.acquire()
+                    continue
+                print(f"Speak: {opus_file_name}")
                 speak_end_event.clear()
                 try:
                     voice_client.play(audio, after=complete)
