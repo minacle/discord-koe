@@ -1030,12 +1030,24 @@ class Bot(discord.Client):
                         voice_name = " ".join(command[2:])
                         voice = None
                         if voice_name == "?":
-                            voice = await self.get_config("voice", language, user=message.author) or default_voice
+                            specified_voice = await self.get_config("voice", language, user=message.author)
+                            if specified_voice:
+                                for voice in voices:
+                                    if voice.language_name == specified_voice:
+                                        break
+                                else:
+                                    voice = None
                             if voice:
-                                name = voice.get("languageName")
-                                if name:
+                                voice_name = voice.get("languageName")
+                                if voice_name:
                                     with suppress(Exception):
-                                        await message.channel.send(f"> voice {language} ?\n`{name}`", reference=message, mention_author=False)
+                                        await message.channel.send(f"> voice {language} ?\n`{voice_name}`", reference=message, mention_author=False)
+                            elif voice_names:
+                                with suppress(Exception):
+                                    await message.channel.send(f"> voice {language} ?\n{voice_names[:-1]}", reference=message, mention_author=False)
+                            else:
+                                with suppress(Exception):
+                                    await message.channel.send(f"> voice {language} ?", reference=message, mention_author=False)
                             return
                         elif voice_name.isdigit():
                             voice_index = int(voice_name) - 1
