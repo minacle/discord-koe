@@ -240,10 +240,10 @@ class Bot(discord.Client):
             print(f"Voice: {voice._source}")
             try:
                 ssml = await self.vom.ssml(text, language=language, channel=message.channel)
+                print(ssml)
             except Exception as e:
                 print(e)
                 traceback.print_exc()
-            print(ssml)
             mp3 = None
             mp3_e = []
             for _ in range(2):
