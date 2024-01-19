@@ -868,21 +868,6 @@ class Bot(discord.Client):
                         await message.channel.send(f"> queue\n{str_buffer.read()}", reference=message, mention_author=False)
                     str_buffer.close()
                     return
-                elif command[0] in ["refresh"]:
-                    command[1] = command[1].lower()
-                    if command[1] in ["token", "t"]:
-                        try:
-                            await self.refresh_vom_token(retry=0)
-                        except aiohttp.ClientResponseError as e:
-                            with suppress(Exception):
-                                await message.channel.send(f"> refresh token\n{e.status}", reference=message, mention_author=False)
-                        except Exception as e:
-                            with suppress(Exception):
-                                await message.channel.send(f"> refresh token\n{e}", reference=message, mention_author=False)
-                        else:
-                            with suppress(Exception):
-                                await message.channel.send("> refresh token", reference=message, mention_author=False)
-                    return
                 elif command[0] in ["left"]:
                     try:
                         usage = await self.vom.character_usage()
@@ -1156,6 +1141,22 @@ class Bot(discord.Client):
                     with suppress(Exception):
                         await message.channel.send(f"> unalias {command[1]} {word}\n{old_alias}", reference=message, mention_author=False)
                     return
+            elif command[0] in ["refresh"]:
+                if len(command) == 2:
+                    command[1] = command[1].lower()
+                    if command[1] in ["token", "t"]:
+                        try:
+                            await self.refresh_vom_token(retry=0)
+                        except aiohttp.ClientResponseError as e:
+                            with suppress(Exception):
+                                await message.channel.send(f"> refresh token\n{e.status}", reference=message, mention_author=False)
+                        except Exception as e:
+                            with suppress(Exception):
+                                await message.channel.send(f"> refresh token\n{e}", reference=message, mention_author=False)
+                        else:
+                            with suppress(Exception):
+                                await message.channel.send("> refresh token", reference=message, mention_author=False)
+                return
         else:
             text = self.speak_or_none(message)
             if text:
