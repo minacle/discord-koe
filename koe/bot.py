@@ -878,6 +878,16 @@ class Bot(discord.Client):
                         with suppress(Exception):
                             await message.channel.send(f"> left\n{usage.characters_available}", reference=message, mention_author=False)
                     return
+                elif command[0] in ["vom_lock"]:
+                    superuser = await self.get_config("superuser", user=message.author)
+                    if not superuser:
+                        return
+                    lock = self.vom_lock
+                    if not lock:
+                        return
+                    with suppress(Exception):
+                        await message.channel.send(f"> vom_lock\n{lock.locked()}", reference=message, mention_author=False)
+                    return
                 elif command[0] in ["help", "?", ""]:
                     if message.author in message.channel.members:
                         try:
@@ -935,6 +945,25 @@ class Bot(discord.Client):
                                 """
                             )
                             text = dedent(text).strip("\n")
+                            superuser = await self.get_config("superuser", user=message.author)
+                            if superuser:
+                                sutext = (
+                                    """
+                                    `vom_lock`
+                                        음성 생성을 위한 잠금 상태를 확인합니다.
+
+                                    `speak_lock`  [*CHANNEL_ID*]
+                                        음성 출력을 위한 잠금 상태를 확인합니다.
+
+                                    `release`  `vom_lock`
+                                        음성 생성을 위한 잠금을 해제합니다.
+
+                                    `release`  `speak_lock`  [*CHANNEL_ID*]
+                                        음성 출력을 위한 잠금을 해제합니다.
+                                    """
+                                )
+                                sutext = dedent(sutext).strip("\n")
+                                text += "\n\n" + sutext
                             await message.channel.send(f"> help\n{text}", reference=message, mention_author=False)
                         except:
                             pass
@@ -1156,6 +1185,56 @@ class Bot(discord.Client):
                         else:
                             with suppress(Exception):
                                 await message.channel.send("> refresh token", reference=message, mention_author=False)
+                return
+            elif command[0] in ["speak_lock"]:
+                if len(command) == 1:
+                    key = message.channel.id
+                elif len(command) == 2 and command[1].isdigit():
+                    key = int(command[1])
+                else:
+                    return
+                lock = self.speak_lock.get(key)
+                if not lock:
+                    return
+                with suppress(Exception):
+                    await message.channel.send(f"> speak_lock {key}\n{lock.locked()}", reference=message, mention_author=False)
+                return
+            elif command[0] in ["release"]:
+                superuser = await self.get_config("superuser", user=message.author)
+                if not superuser:
+                    return
+                if len(command) > 1:
+                    command[1] = command[1].lower()
+                    if len(command) == 2 and command[1] in ["vom_lock"]:
+                        lock = self.vom_lock
+                        if lock and lock.locked():
+                            lock.release()
+                            with suppress(Exception):
+                                await message.channel.send("> release vom_lock", reference=message, mention_author=False)
+                    elif command[1] in ["speak_lock"]:
+                        if len(command) == 2:
+                            keys = [message.channel.id]
+                        elif len(command) == 3:
+                            if command[2] == "*":
+                                keys = []
+                            elif command[2].isdigit():
+                                keys = [int(command[2])]
+                            else:
+                                return
+                        else:
+                            return
+                        if not keys:
+                            keys = self.speak_lock.keys()
+                        released = False
+                        for key in keys:
+                            lock = self.speak_lock.get(key)
+                            if lock and lock.locked():
+                                lock.release()
+                                released = True
+                        if released:
+                            key = "*" if len(keys) > 1 else keys[0]
+                            with suppress(Exception):
+                                await message.channel.send(f"> release speak_lock {key}", reference=message, mention_author=False)
                 return
         else:
             text = self.speak_or_none(message)
