@@ -327,8 +327,8 @@ class Bot(discord.Client):
             speak_queue.append((message, text, (opus_file_descriptor, opus_file_name)))
             if not self.is_speak_job_running.get(message.channel.id, False):
                 self.is_speak_job_running[message.channel.id] = True
-                speak_lock.release()
                 self.loop.create_task(self.speak_job(message.channel))
+                speak_lock.release()
             else:
                 speak_lock.release()
             await self.vom_lock.acquire()
@@ -506,8 +506,8 @@ class Bot(discord.Client):
                     speak_end_event.set()
             await speak_lock.acquire()
         self.voming_item = None
-        speak_lock.release()
         self.is_speak_job_running[channel.id] = False
+        speak_lock.release()
 
     async def load_enabled(
         self,
