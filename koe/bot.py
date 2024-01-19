@@ -295,7 +295,7 @@ class Bot(discord.Client):
             print(f"OPUS: {opus_file_name}")
             try:
                 stream = ffmpeg.input(mp3_file_name)
-                stream = ffmpeg.filter(stream, "speechnorm", e=12.5, r=0.0001, l=1)
+                stream = ffmpeg.filter(stream, "speechnorm", e=8.0, r=5e-5, l=1)
                 stream = ffmpeg.output(stream, opus_file_name, acodec="libopus")
                 stream = ffmpeg.overwrite_output(stream)
                 await self.loop.run_in_executor(None, ffmpeg.run, stream, "ffmpeg", True, True)
