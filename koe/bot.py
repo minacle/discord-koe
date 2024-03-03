@@ -800,7 +800,7 @@ class Bot(discord.Client):
                         await message.channel.send("> disable", reference=message, mention_author=False)
                     return
                 elif command[0] in ["toggle", "~"]:
-                    value = message.author.id not in self.enabled_user_ids_map[message.channel.id]
+                    value = message.author.id not in self.enabled_user_ids_map.get[message.channel.id, []]
                     await self.update_enabled(value, channel=message.channel, user=message.author)
                     with suppress(Exception):
                         await message.channel.send(f"> toggle\n{value}", reference=message, mention_author=False)
