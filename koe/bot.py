@@ -533,7 +533,7 @@ class Bot(discord.Client):
     ) -> bool:
         async with self.enabled_user_ids_lock:
             if self.enabled_user_ids_map:
-                if channel in self.enabled_user_ids_map.keys():
+                if channel.id in self.enabled_user_ids_map.keys():
                     if user.id in self.enabled_user_ids_map[channel.id]:
                         return True
             return False

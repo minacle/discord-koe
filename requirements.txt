@@ -1,4 +1,4 @@
-aiohttp == 3.*
+aiohttp == 3.8.5  # because VOM transmits a duplicate 'Server' header
 asyncache == 0.3.*
 cachetools == 5.*
 discord.py == 2.*
