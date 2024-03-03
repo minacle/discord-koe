@@ -52,10 +52,13 @@ pyenv virtualenv pypy3.9-7.3.15 discord-koe
 ### 목소리 및 성별을 바꾸고 싶어요.
 
 성별을 여성으로 바꾸기 위해선 다음 명령어로 바꿀 수 있습니다.
+
 ```Text
 @Koe gender female
 ```
+
 목소리 목록은 다음 명령어로 확인할 수 있습니다.
+
 ```Text
 @Koe voices ko 1
 ```
@@ -63,11 +66,13 @@ pyenv virtualenv pypy3.9-7.3.15 discord-koe
 ```Text
 @Koe voices ko 2
 ```
+
 목소리 견본은 다음 홈페이지에서 들어볼 수 있습니다.
 
 https://voiceovermaker.io/#languages
 
 목소리는 다음 명령어로 설정할 수 있습니다.
+
 ```Text
 @Koe voice ko 3
 ```
@@ -77,11 +82,13 @@ https://voiceovermaker.io/#languages
 ```
 ---
 성별을 남성으로 바꾸기 위해선 다음 명령어로 바꿀 수 있습니다.
+
 ```Text
 @Koe gender male
 ```
 
 목소리 목록은 다음 명령어로 확인할 수 있습니다.
+
 ```Text
 @Koe voices ko 1
 ```
@@ -94,9 +101,11 @@ https://voiceovermaker.io/#languages
 https://voiceovermaker.io/#languages
 
 목소리는 다음 명령어로 설정할 수 있습니다.
+
 ```Text
 @Koe voice ko 3
 ```
+
 **해당 명령어는 목소리 목록을 보는 명령어와 달리 복수형이 아닙니다. (voice)**
 
 ### 언어코드가 뭔가요?
@@ -133,6 +142,7 @@ Koe 에서 주요 언어에 대한 언어코드는 다음과 같습니다.
 ### KOE가 말하는 걸 중간에 중지하고 싶어요.
 
 누군가 Koe로 테러했을 때 혹은 누군가 Koe를 이용하였는데 무언정지 상태가 되어 중지하고 싶을 때 사용하는 명령어입니다.
+
 ```Text
 @Koe stop
 ```
@@ -144,14 +154,19 @@ Koe 에서 주요 언어에 대한 언어코드는 다음과 같습니다.
 ### Koe가 고장났어요.
 
 #### 셀프호스트인 경우
+
 ```Text
 @Koe stop
 ```
+
 명령어를 통해 일단 Koe를 중지시킵니다.
+
 ```Text
 @Koe ping
 ```
+
 명령어를 통해 Koe와의 통신상태를 확인합니다.
+
 ```Text
 @Koe q?
 ```
@@ -159,8 +174,10 @@ Koe 에서 주요 언어에 대한 언어코드는 다음과 같습니다.
 ```Text
 @Koe queue
 ```
+
 명령어를 통해 큐 상태를 점검합니다.
 큐 상태가 꼬이면 superuser가 relase-vom-lock, relase-speak-lock 명령어를 통해 큐에 lock을 해제처리합니다. (release 합니다.)
+
 ```Text
 @Koe q!
 ```
@@ -168,6 +185,7 @@ Koe 에서 주요 언어에 대한 언어코드는 다음과 같습니다.
 ```Text
 @Koe quit
 ```
+
 를 통해 Koe 봇을 내보냈다가 다시 채팅을 쳐서 들여보냅니다.
 
 다 안 되면 @Koe 데몬을 재시작합니다.
@@ -181,6 +199,7 @@ Koe 에서 주요 언어에 대한 언어코드는 다음과 같습니다.
 Koe 데몬을 실행시키고 설정값을 변경하면 (EX voice or gender 등) config.yaml이 생성됩니다.
 
 config.yaml 에서 관리자 사용자 ID 밑에 superuser: true 를 추가합니다.
+
 ```yaml
 123456789012345678:
   superuser: true
@@ -188,6 +207,7 @@ config.yaml 에서 관리자 사용자 ID 밑에 superuser: true 를 추가합�
   voice:
     ko: Korean (ko-KR, Female, Neural) - JiMin
 ```
+
 **디스코드 사용자 ID는 디스코드에서 개발자모드를 설정한 뒤 프로필에서 우클릭으로 사용자 ID를 복사하여 확인할 수 있습니다.**
 
 ### alias 가 뭔가요?
@@ -201,20 +221,26 @@ EX) ㄱㄱ 을 고고 로 읽음
 ```Text
 alias ko 트위터 똥
 ```
+
 다음과 같은 명령어로 alias 설정을 볼 수 있습니다.
+
 ```Text
 @Koe alias ko 트위터
 ```
+
 성공하면 다음과 같이 반환합니다.
+
 ```Text
     >alias ko 트위터
     >>똥
 ```
 
 기본적인 명령어 명세는 다음과 같습니다.
+
 ```Text
 a[lias]|a! [force] <LANGUAGE|~> <REGEX> [ALIAS]
 ```
+
 ### 설정 데이터는 어떻게 저장되나요?
 
 설정 데이터들은 루트 디렉토리에 yaml 파일로 저장되며 그종류에 따라 config.yaml, enabled.yaml, aliases.yaml 로 나뉘어 저장됩니다.
