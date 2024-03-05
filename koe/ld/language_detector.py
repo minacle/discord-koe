@@ -12,10 +12,12 @@ from typing import Final
 
 class LanguageDetector:
 
-    _ldcache: Final = (
+    _ldcache_filename: Final[str] = "data/ldcache.shelf"
+
+    _ldcache: Final[PersistentCache] = (
         PersistentCache(
             LFUCache,
-            "ldcache",
+            _ldcache_filename,
             maxsize=1_048_576,
             getsizeof=lambda x: len(x) + 1,
         )

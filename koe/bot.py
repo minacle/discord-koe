@@ -513,7 +513,7 @@ class Bot(discord.Client):
         self,
         /,
         *,
-        path: StrOrBytesPath = "enabled.yaml",
+        path: StrOrBytesPath = "data/enabled.yaml",
         **kwargs
     ) -> None:
         async with self.enabled_user_ids_lock:
@@ -545,7 +545,7 @@ class Bot(discord.Client):
         *,
         channel: discord.channel.VocalGuildChannel,
         user: Union[discord.User, discord.Member],
-        path: StrOrBytesPath = "enabled.yaml",
+        path: StrOrBytesPath = "data/enabled.yaml",
         **kwargs
     ) -> None:
         await self.load_enabled(path=path)
@@ -568,7 +568,7 @@ class Bot(discord.Client):
         self,
         /,
         *,
-        path: StrOrBytesPath = "config.yaml",
+        path: StrOrBytesPath = "data/config.yaml",
         **kwargs
     ) -> None:
         async with self.user_config_lock:
@@ -649,7 +649,7 @@ class Bot(discord.Client):
         self,
         *keys_and_value: Union[str, Optional[Any]],
         user: Union[discord.User, discord.Member],
-        path: StrOrBytesPath = "config.yaml",
+        path: StrOrBytesPath = "data/config.yaml",
         **kwargs
     ) -> None:
         await self.load_config(path=path)
