@@ -309,18 +309,18 @@ class VOM:
         *,
         user: discord.abc.User,
         language: Optional[str] = None,
-        voices: Optional[list[dict]] = None,
+        voices: Optional[list[Voice]] = None,
         **kwargs
     ) -> Optional[Voice]:
         if not voices:
-            voices = VOM.filter_voices(language)
+            voices = self.filter_voices(language)
         if not voices:
-            if "-" in language:
+            if language and "-" in language:
                 language = language.split("-")[0]
-                voices = VOM.filter_voices(language)
+                voices = self.filter_voices(language)
             else:
-                starts_with = language + "-"
-                voices = VOM.filter_voices(starts_with=starts_with)
+                starts_with = (language or "") + "-"
+                voices = self.filter_voices(starts_with=starts_with)
         random = Random(user.id)
         if not voices:
             return None
