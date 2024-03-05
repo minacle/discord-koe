@@ -5,7 +5,7 @@ ARG PATHON_PATH=/opt/pypy
 
 FROM ${PYTHON_IMAGE} as base
 
-WORKDIR /usr/src/app
+WORKDIR /opt/koe
 
 RUN rm -f /etc/apt/apt.conf.d/docker-clean
 
@@ -37,6 +37,8 @@ ARG PATHON_PATH
 
 COPY --link . .
 COPY --link --from=builder ${PATHON_PATH} ${PATHON_PATH}
+
+VOLUME /opt/koe/data
 
 ENV PYTHON "${PYTHON}"
 
