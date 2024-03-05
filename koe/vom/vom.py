@@ -210,7 +210,7 @@ class VOM:
                 async with self._voices_lock:
                     self.voices = voice_objects
             else:
-                return self.list_voices(refresh=True)
+                return await self.list_voices(refresh=True)
         else:
             url = "https://api.voiceovermaker.io/list_voices"
             async with self._token_lock:
