@@ -19,9 +19,9 @@ RUN \
     set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
-		build-essential \
-		make \
-	;
+        build-essential \
+        make \
+    ;
 
 COPY requirements.txt ./
 
@@ -41,8 +41,8 @@ RUN \
     set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
-		ffmpeg \
-	;
+        ffmpeg \
+    ;
 
 COPY --link . .
 COPY --link --from=builder ${PATHON_PATH} ${PATHON_PATH}
