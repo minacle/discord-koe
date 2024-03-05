@@ -1,0 +1,5 @@
+services:
+  koe:
+    build: .
+    volumes:
+      - ./data:/opt/koe/data

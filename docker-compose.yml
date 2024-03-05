@@ -1,0 +1,10 @@
+services:
+  koe:
+    image: ghcr.io/minacle/discord-koe
+    volumes:
+      - koe-data:/opt/koe/data
+    environment:
+      DISCORD_TOKEN: 
+      GOOGLE_API_KEY:
+      VOM_EMAIL:
+      VOM_PASSWORD:
