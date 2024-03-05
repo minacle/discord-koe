@@ -26,8 +26,10 @@ class VOM:
 
     Aliases: Final = dict[Optional[str], dict[Optional[str], dict[int, dict[str, str]]]]
 
-    _galiases_filename: Final = "galiases.yaml"
-    _caliases_filename: Final = "aliases.yaml"
+    _voices_filename: Final[str] = "data/voices.json"
+    _vccache_filename: Final[str] = "data/vccache.shelf"
+    _galiases_filename: Final[str] = "data/galiases.yaml"
+    _caliases_filename: Final[str] = "data/aliases.yaml"
 
     def __init__(
         self
@@ -43,7 +45,7 @@ class VOM:
         self._vccache = (
             PersistentCache(
                 LFUCache,
-                "vccache",
+                VOM._vccache_filename,
                 maxsize=805_306_308,
                 getsizeof=lambda x: len(x) if x is not None else 0,
             )
@@ -201,8 +203,8 @@ class VOM:
         if not refresh:
             if self.voices:
                 return self.voices
-            if os.path.exists("voices.json"):
-                with open("voices.json", "r") as f:
+            if os.path.exists(VOM._voices_filename):
+                with open(VOM._voices_filename, "r") as f:
                     voices = json.load(f)
                 voice_objects = []
                 for voice in voices:
@@ -219,7 +221,7 @@ class VOM:
             async with aiohttp.ClientSession() as session:
                 async with session.get(url, headers=headers, timeout=60, raise_for_status=True) as response:
                     voices = json.loads(await response.text())
-            with open("voices.json", "w") as f:
+            with open(VOM._voices_filename, "w") as f:
                 json.dump(voices, f, indent=4)
             voice_objects = []
             for voice in voices:
