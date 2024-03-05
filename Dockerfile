@@ -32,8 +32,17 @@ RUN \
 ################################################################################
 
 FROM base
+ARG TARGETPLATFORM
 ARG PYTHON
 ARG PATHON_PATH
+
+RUN \
+    --mount=type=cache,id=$TARGETPLATFORM:/var/cache,target=/var/cache,sharing=locked \
+    set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+		ffmpeg \
+	;
 
 COPY --link . .
 COPY --link --from=builder ${PATHON_PATH} ${PATHON_PATH}
