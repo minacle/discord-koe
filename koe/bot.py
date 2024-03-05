@@ -29,6 +29,7 @@ from typing import (
     Type,
     TypeVar,
     Union,
+    cast,
     overload,
 )
 from typing_extensions import override
@@ -76,7 +77,7 @@ class Bot(discord.Client):
         self.speak_lock: dict[int, asyncio.Lock] = {}
         #
         # {channel_id: [(message, text, (opus_file_descriptor, opus_file_name), audio)]}
-        self.speaking_queue: dict[int, list[tuple[discord.Message, str, tuple[int, str], discord.FFmpegAudio]]] = {}
+        self.speaking_queue: dict[int, list[tuple[discord.Message, str, tuple[int, str], discord.FFmpegOpusAudio]]] = {}
         #
         self.is_vom_job_running: bool = False
         #
@@ -86,15 +87,16 @@ class Bot(discord.Client):
     @override
     def run(
         self,
-        *,
+        *args: Any,
         reconnect: bool = True,
         log_handler: Optional[logging.Handler] = MISSING,
         log_formatter: logging.Formatter = MISSING,
         log_level: int = MISSING,
         root_logger: bool = False,
     ) -> None:
+        token = self.auth.discord.token if not args else cast(str, args[0])
         super(Bot, self).run(
-            token=self.auth.discord.token,
+            token=token,
             reconnect=reconnect,
             log_handler=log_handler,
             log_formatter=log_formatter,
@@ -106,9 +108,13 @@ class Bot(discord.Client):
         self,
         message: discord.Message
     ) -> Optional[str]:
+        if not self.user:
+            return None
         if message.is_system():
             return None
         if message.author.bot:
+            return None
+        if not isinstance(message.author, discord.Member):
             return None
         if self.user.mentioned_in(message):
             if message.content.startswith(f"<@!{self.user.id}>"):
@@ -126,16 +132,19 @@ class Bot(discord.Client):
         self,
         message: discord.Message
     ) -> Optional[str]:
+        if not self.user:
+            return None
         if message.is_system():
             return None
         if message.author.bot:
             return None
-        if isinstance(message.author, discord.Member):
-            if message.author.voice:
-                if message.author.voice.deaf or message.author.voice.self_deaf:
-                    return None
-            else:
+        if not isinstance(message.author, discord.Member):
+            return None
+        if message.author.voice:
+            if message.author.voice.deaf or message.author.voice.self_deaf:
                 return None
+        else:
+            return None
         if message.mentions or message.role_mentions:
             if re.match(r"^<@[!&]?\d+>", message.content.strip()):
                 return None
@@ -152,13 +161,18 @@ class Bot(discord.Client):
     async def vom_job(
         self
     ) -> None:
-        await self.vom_lock.acquire()
+        vom_lock = self.vom_lock
+        if not vom_lock:
+            return
+        await vom_lock.acquire()
         while self.vom_queue:
             message, text = item = self.vom_queue.pop(0)
+            if not isinstance(message.channel, discord.channel.VocalGuildChannel):
+                continue
             self.voming_item = item
             if not text.strip():
                 continue
-            self.vom_lock.release()
+            vom_lock.release()
             print(f"<{message.author}> {text}")
             if not self.vom.voices:
                 for _ in range(5):
@@ -197,7 +211,7 @@ class Bot(discord.Client):
                     await message.channel.send(f"> ,,{text}\n{None}", reference=message)
                 except:
                     pass
-                await self.vom_lock.acquire()
+                await vom_lock.acquire()
                 continue
             specified_voice = await self.get_config("voice", language, user=message.author)
             voice = None
@@ -232,12 +246,14 @@ class Bot(discord.Client):
                         await message.channel.send(f"> ,,{text}\n{language_e}", reference=message, silent=True)
                     except:
                         pass
-                    await self.vom_lock.acquire()
+                    await vom_lock.acquire()
                     continue
+                _voices = cast(list[Voice], _voices)
                 print(f"Voices count: {len(_voices)}")
                 random = Random(message.author.id)
                 voice = random.choice(_voices)
             print(f"Voice: {voice._source}")
+            ssml = ""
             try:
                 ssml = await self.vom.ssml(text, language=language, channel=message.channel)
                 print(ssml)
@@ -246,6 +262,7 @@ class Bot(discord.Client):
                 traceback.print_exc()
             mp3 = None
             mp3_e = []
+            # TODO: skip if ssml is empty
             for _ in range(2):
                 try:
                     mp3 = await self.vom.create_voice(ssml, voice)
@@ -285,7 +302,7 @@ class Bot(discord.Client):
                 if language_e or mp3_e:
                     with suppress(Exception):
                         await message.channel.send(f"> ,,{text}\n{language_e}\n{mp3_e}", reference=message, silent=True)
-                await self.vom_lock.acquire()
+                await vom_lock.acquire()
                 continue
             mp3_file_descriptor, mp3_file_name = mkstemp(suffix=".mp3")
             with os.fdopen(mp3_file_descriptor, "wb", closefd=True) as f:
@@ -310,7 +327,7 @@ class Bot(discord.Client):
                     await message.channel.send(f"> ,,{text}\n{e}", reference=message)
                 except:
                     pass
-                await self.vom_lock.acquire()
+                await vom_lock.acquire()
                 continue
             with suppress(OSError):
                 os.remove(mp3_file_name)
@@ -331,9 +348,9 @@ class Bot(discord.Client):
                 speak_lock.release()
             else:
                 speak_lock.release()
-            await self.vom_lock.acquire()
+            await vom_lock.acquire()
         self.voming_item = None
-        self.vom_lock.release()
+        vom_lock.release()
         self.is_vom_job_running = False
 
     async def speak_job(
@@ -355,6 +372,8 @@ class Bot(discord.Client):
             self.speaking_queue[channel.id] = speaking_queue
         while speak_queue:
             message, text, (opus_file_descriptor, opus_file_name) = item = speak_queue.pop(0)
+            if not isinstance(message.channel, discord.channel.VocalGuildChannel):
+                continue
             try:
                 audio = discord.FFmpegOpusAudio(opus_file_name)
             except Exception as e:
@@ -405,7 +424,7 @@ class Bot(discord.Client):
             def complete(
                 e: Optional[Exception]
             ) -> None:
-                speak_end_event.set()
+                cast(asyncio.Event, speak_end_event).set()
                 message, text, (opus_file_descriptor, opus_file_name), audio = speaking_queue.pop(0)
                 cleanup(opus_file_descriptor, opus_file_name, audio)
                 print(f"Speak complete: {opus_file_name}")
@@ -489,6 +508,7 @@ class Bot(discord.Client):
                 if cont:
                     await speak_lock.acquire()
                     continue
+                voice_client = cast(discord.VoiceProtocol, voice_client)
                 await speak_end_event.wait()
                 if not speakable():
                     speaking_queue.pop(0)
@@ -548,8 +568,11 @@ class Bot(discord.Client):
         path: StrOrBytesPath = "data/enabled.yaml",
         **kwargs
     ) -> None:
+        enabled_user_ids_lock = self.enabled_user_ids_lock
+        if not enabled_user_ids_lock:
+            return
         await self.load_enabled(path=path)
-        async with self.enabled_user_ids_lock:
+        async with enabled_user_ids_lock:
             if enabled:
                 if channel.id not in self.enabled_user_ids_map.keys():
                     self.enabled_user_ids_map[channel.id] = []
@@ -571,7 +594,10 @@ class Bot(discord.Client):
         path: StrOrBytesPath = "data/config.yaml",
         **kwargs
     ) -> None:
-        async with self.user_config_lock:
+        user_config_lock = self.user_config_lock
+        if not user_config_lock:
+            return
+        async with user_config_lock:
             if os.path.exists(path):
                 with open(path, "r") as f:
                     self.user_config_map = yaml.safe_load(f) or {}
@@ -604,7 +630,10 @@ class Bot(discord.Client):
         user: Union[discord.User, discord.Member],
         **kwargs
     ) -> Optional[Any]:
-        async with self.user_config_lock:
+        user_config_lock = self.user_config_lock
+        if not user_config_lock:
+            return None
+        async with user_config_lock:
             if self.user_config_map:
                 if user.id in self.user_config_map.keys():
                     def get_nested(
@@ -629,7 +658,7 @@ class Bot(discord.Client):
         /,
         *,
         user: Union[discord.User, discord.Member],
-        path: StrOrBytesPath,
+        path: StrOrBytesPath = ...,
         **kwargs
     ) -> None:
         ...
@@ -640,7 +669,7 @@ class Bot(discord.Client):
         *keys: str,
         value: Optional[Any],
         user: Union[discord.User, discord.Member],
-        path: StrOrBytesPath,
+        path: StrOrBytesPath = ...,
         **kwargs
     ) -> None:
         ...
@@ -652,8 +681,11 @@ class Bot(discord.Client):
         path: StrOrBytesPath = "data/config.yaml",
         **kwargs
     ) -> None:
+        user_config_lock = self.user_config_lock
+        if not user_config_lock:
+            return
         await self.load_config(path=path)
-        async with self.user_config_lock:
+        async with user_config_lock:
             if user.id not in self.user_config_map.keys():
                 self.user_config_map[user.id] = {}
             keys: list[str] = []
@@ -722,7 +754,7 @@ class Bot(discord.Client):
         channel: discord.VoiceChannel,
         vc_type: Optional[Type[VoiceClient]] = None,
         /
-    ) -> Optional[VoiceClient]:
+    ) -> Optional[Union[VoiceClient, discord.VoiceProtocol]]:
         for vc in self.voice_clients:
             if vc_type is None:
                 return vc
@@ -733,7 +765,7 @@ class Bot(discord.Client):
     @overload
     def connected_voice_client(
         self,
-        channel: discord.VoiceChannel,
+        channel: discord.channel.VocalGuildChannel,
         /,
     ) -> Optional[discord.VoiceProtocol]:
         ...
@@ -741,7 +773,7 @@ class Bot(discord.Client):
     @overload
     def connected_voice_client(
         self,
-        channel: discord.VoiceChannel,
+        channel: discord.channel.VocalGuildChannel,
         vc_type: Type[VoiceClient],
         /,
     ) -> Optional[VoiceClient]:
@@ -749,10 +781,10 @@ class Bot(discord.Client):
 
     def connected_voice_client(
         self,
-        channel: discord.VoiceChannel,
+        channel: discord.channel.VocalGuildChannel,
         vc_type: Optional[Type[VoiceClient]] = None,
         /
-    ) -> Optional[VoiceClient]:
+    ) -> Optional[Union[VoiceClient, discord.VoiceProtocol]]:
         for vc in self.connected_voice_clients:
             if vc_type is None:
                 return vc
@@ -1237,16 +1269,19 @@ class Bot(discord.Client):
                                 await message.channel.send(f"> release speak_lock {key}", reference=message, mention_author=False)
                 return
         else:
+            vom_lock = self.vom_lock
+            if not vom_lock:
+                return
             text = self.speak_or_none(message)
             if text:
-                await self.vom_lock.acquire()
+                await vom_lock.acquire()
                 self.vom_queue.append((message, text))
                 if not self.is_vom_job_running:
                     self.is_vom_job_running = True
-                    self.vom_lock.release()
+                    vom_lock.release()
                     self.loop.create_task(self.vom_job())
                 else:
-                    self.vom_lock.release()
+                    vom_lock.release()
 
     async def on_voice_state_update(
         self,
