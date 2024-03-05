@@ -16,6 +16,7 @@ import os
 from random import Random
 import re
 from shelved_cache import PersistentCache
+from shutil import copy2 as copy
 import xml.sax.saxutils
 import yaml
 
@@ -142,6 +143,14 @@ class VOM:
     def reload_galiases(
         self
     ) -> None:
+        pgaliases_filename = VOM._galiases_filename.split("/")[-1]
+        galiases_mtime, pgaliases_mtime = float("-inf"), float("-inf")
+        with suppress(FileNotFoundError):
+            galiases_mtime = os.path.getmtime(VOM._galiases_filename)
+        with suppress(FileNotFoundError):
+            pgaliases_mtime = os.path.getmtime(pgaliases_filename)
+        if galiases_mtime < pgaliases_mtime:
+            copy(pgaliases_filename, VOM._galiases_filename)
         with suppress(FileNotFoundError):
             with open(VOM._galiases_filename, "r") as f:
                 self._galiases = yaml.safe_load(f) or {}
@@ -203,6 +212,14 @@ class VOM:
         if not refresh:
             if self.voices:
                 return self.voices
+            pvoices_filename = VOM._voices_filename.split("/")[-1]
+            voices_mtime, pvoices_mtime = float("-inf"), float("-inf")
+            with suppress(FileNotFoundError):
+                voices_mtime = os.path.getmtime(VOM._voices_filename)
+            with suppress(FileNotFoundError):
+                pvoices_mtime = os.path.getmtime(pvoices_filename)
+            if voices_mtime < pvoices_mtime:
+                copy(pvoices_filename, VOM._voices_filename)
             if os.path.exists(VOM._voices_filename):
                 with open(VOM._voices_filename, "r") as f:
                     voices = json.load(f)
