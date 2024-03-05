@@ -179,7 +179,7 @@ class Bot(discord.Client):
                     try:
                         await self.vom.list_voices()
                     except:
-                        asyncio.sleep(0.5)
+                        await asyncio.sleep(0.5)
                     else:
                         break
             language = "und"
@@ -431,8 +431,8 @@ class Bot(discord.Client):
                 if e:
                     print(f"{type(e)}: {e}")
                     traceback.print_exc()
-                    self.loop.call_soon(
-                        message.channel.send(f"> ,,{text}\n{e}", reference=message, silent=True)
+                    self.loop.call_soon_threadsafe(
+                        lambda: asyncio.create_task(message.channel.send(f"> ,,{text}\n{e}", reference=message, silent=True))
                     )
 
             async def log_error(
@@ -483,7 +483,7 @@ class Bot(discord.Client):
                             if e.args[0] == "Already connected to a voice channel.":
                                 voice_client = self.voice_client(message.channel, discord.VoiceClient)
                                 if voice_client is not None:
-                                    voice_client.disconnect(force=True)
+                                    await voice_client.disconnect(force=True)
                                     continue
                                 else:
                                     speaking_queue.pop(0)
