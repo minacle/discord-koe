@@ -536,7 +536,10 @@ class Bot(discord.Client):
         path: StrOrBytesPath = "data/enabled.yaml",
         **kwargs
     ) -> None:
-        async with self.enabled_user_ids_lock:
+        enabled_user_ids_lock = self.enabled_user_ids_lock
+        if not enabled_user_ids_lock:
+            return
+        async with enabled_user_ids_lock:
             if os.path.exists(path):
                 with open(path, "r") as f:
                     self.enabled_user_ids_map = yaml.safe_load(f) or {}
@@ -551,7 +554,10 @@ class Bot(discord.Client):
         user: Union[discord.User, discord.Member],
         **kwargs
     ) -> bool:
-        async with self.enabled_user_ids_lock:
+        enabled_user_ids_lock = self.enabled_user_ids_lock
+        if not enabled_user_ids_lock:
+            return False
+        async with enabled_user_ids_lock:
             if self.enabled_user_ids_map:
                 if channel.id in self.enabled_user_ids_map.keys():
                     if user.id in self.enabled_user_ids_map[channel.id]:

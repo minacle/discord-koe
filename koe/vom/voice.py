@@ -34,8 +34,8 @@ class Voice(collections.abc.Hashable, collections.abc.Mapping):
         return self._source[key]
 
     def __iter__(
-        self
-    ) -> dict:
+        self,
+    ) -> collections.abc.Iterator[str]:
         return iter(self._source)
 
     def __len__(
@@ -45,7 +45,7 @@ class Voice(collections.abc.Hashable, collections.abc.Mapping):
 
     def __contains__(
         self,
-        key: str
+        key: object,
     ) -> bool:
         return key in self._source
 
