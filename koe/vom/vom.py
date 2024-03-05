@@ -16,6 +16,7 @@ import os
 from random import Random
 import re
 from shelved_cache import PersistentCache
+from shutil import copy2 as copy
 import xml.sax.saxutils
 import yaml
 
@@ -55,7 +56,7 @@ class VOM:
 
     async def aliases(
         self,
-        channel: discord.abc.VocalGuildChannel
+        channel: discord.channel.VocalGuildChannel
     ) -> VOM.Aliases:
 
         def deepmerge(
@@ -82,7 +83,7 @@ class VOM:
 
     async def set_alias(
         self,
-        channel: discord.abc.VocalGuildChannel,
+        channel: discord.channel.VocalGuildChannel,
         source_language: Optional[str],
         destination_language: Optional[str],
         word: str,
@@ -116,7 +117,7 @@ class VOM:
 
     async def calias(
         self,
-        channel: discord.abc.VocalGuildChannel,
+        channel: discord.channel.VocalGuildChannel,
         source_language: Optional[str],
         destination_language: Optional[str],
         word: str
@@ -142,6 +143,14 @@ class VOM:
     def reload_galiases(
         self
     ) -> None:
+        pgaliases_filename = VOM._galiases_filename.split("/")[-1]
+        galiases_mtime, pgaliases_mtime = float("-inf"), float("-inf")
+        with suppress(FileNotFoundError):
+            galiases_mtime = os.path.getmtime(VOM._galiases_filename)
+        with suppress(FileNotFoundError):
+            pgaliases_mtime = os.path.getmtime(pgaliases_filename)
+        if galiases_mtime < pgaliases_mtime:
+            copy(pgaliases_filename, VOM._galiases_filename)
         with suppress(FileNotFoundError):
             with open(VOM._galiases_filename, "r") as f:
                 self._galiases = yaml.safe_load(f) or {}
@@ -203,6 +212,14 @@ class VOM:
         if not refresh:
             if self.voices:
                 return self.voices
+            pvoices_filename = VOM._voices_filename.split("/")[-1]
+            voices_mtime, pvoices_mtime = float("-inf"), float("-inf")
+            with suppress(FileNotFoundError):
+                voices_mtime = os.path.getmtime(VOM._voices_filename)
+            with suppress(FileNotFoundError):
+                pvoices_mtime = os.path.getmtime(pvoices_filename)
+            if voices_mtime < pvoices_mtime:
+                copy(pvoices_filename, VOM._voices_filename)
             if os.path.exists(VOM._voices_filename):
                 with open(VOM._voices_filename, "r") as f:
                     voices = json.load(f)
@@ -309,18 +326,18 @@ class VOM:
         *,
         user: discord.abc.User,
         language: Optional[str] = None,
-        voices: Optional[list[dict]] = None,
+        voices: Optional[list[Voice]] = None,
         **kwargs
     ) -> Optional[Voice]:
         if not voices:
-            voices = VOM.filter_voices(language)
+            voices = self.filter_voices(language)
         if not voices:
-            if "-" in language:
+            if language and "-" in language:
                 language = language.split("-")[0]
-                voices = VOM.filter_voices(language)
+                voices = self.filter_voices(language)
             else:
-                starts_with = language + "-"
-                voices = VOM.filter_voices(starts_with=starts_with)
+                starts_with = (language or "") + "-"
+                voices = self.filter_voices(starts_with=starts_with)
         random = Random(user.id)
         if not voices:
             return None
@@ -333,7 +350,7 @@ class VOM:
         /,
         *,
         language: Optional[str],
-        channel: discord.abc.VocalGuildChannel
+        channel: discord.channel.VocalGuildChannel
     ) -> str:
         text = re.sub(r"\\([!\"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~])", r"\1", text)
         text = (

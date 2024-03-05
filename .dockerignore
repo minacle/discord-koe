@@ -1,8 +1,5 @@
 __pycache__/
 /.env
-*.json
-*.shelf
-*.yaml
-!voices.json
-!galiases.yaml
+/data/
+!.keep
 .git
