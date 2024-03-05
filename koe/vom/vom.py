@@ -55,7 +55,7 @@ class VOM:
 
     async def aliases(
         self,
-        channel: discord.abc.VocalGuildChannel
+        channel: discord.channel.VocalGuildChannel
     ) -> VOM.Aliases:
 
         def deepmerge(
@@ -82,7 +82,7 @@ class VOM:
 
     async def set_alias(
         self,
-        channel: discord.abc.VocalGuildChannel,
+        channel: discord.channel.VocalGuildChannel,
         source_language: Optional[str],
         destination_language: Optional[str],
         word: str,
@@ -116,7 +116,7 @@ class VOM:
 
     async def calias(
         self,
-        channel: discord.abc.VocalGuildChannel,
+        channel: discord.channel.VocalGuildChannel,
         source_language: Optional[str],
         destination_language: Optional[str],
         word: str
@@ -333,7 +333,7 @@ class VOM:
         /,
         *,
         language: Optional[str],
-        channel: discord.abc.VocalGuildChannel
+        channel: discord.channel.VocalGuildChannel
     ) -> str:
         text = re.sub(r"\\([!\"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~])", r"\1", text)
         text = (
