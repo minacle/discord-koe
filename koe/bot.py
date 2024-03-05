@@ -390,11 +390,11 @@ class Bot(discord.Client):
                 continue
             speaking_queue.append((*item, audio))
             speak_lock.release()
-            speak_end_event = self.speak_end_events_map.get(channel)
+            speak_end_event = self.speak_end_events_map.get(channel.id)
             if not speak_end_event:
                 speak_end_event = asyncio.Event()
                 speak_end_event.set()
-                self.speak_end_events_map[message.channel] = speak_end_event
+                self.speak_end_events_map[message.channel.id] = speak_end_event
 
             def speakable() -> bool:
                 author = message.author
