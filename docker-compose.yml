@@ -8,3 +8,6 @@ services:
       GOOGLE_API_KEY:
       VOM_EMAIL:
       VOM_PASSWORD:
+
+volumes:
+  koe-data:
