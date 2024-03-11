@@ -1,0 +1,10 @@
+services:
+  koe:
+    image: ghcr.io/minacle/discord-koe
+    volumes:
+      - koe-data:/opt/koe/data
+    env_file:
+      - .env
+
+volumes:
+  koe-data:
