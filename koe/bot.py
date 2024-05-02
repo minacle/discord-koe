@@ -926,6 +926,22 @@ class Bot(discord.Client):
                     with suppress(Exception):
                         await message.channel.send(f"> vom_lock\n{lock.locked()}", reference=message, mention_author=False)
                     return
+                elif command[0] in ["voice_client", "vc"]:
+                    superuser = await self.get_config("superuser", user=message.author)
+                    if not superuser:
+                        return
+                    voice_client = self.voice_client(message.channel)
+                    with suppress(Exception):
+                        await message.channel.send(f"> voice_client\n{voice_client}", reference=message, mention_author=False)
+                    return
+                elif command[0] in ["connected_voice_client", "cvc"]:
+                    superuser = await self.get_config("superuser", user=message.author)
+                    if not superuser:
+                        return
+                    voice_client = self.connected_voice_client(message.channel)
+                    with suppress(Exception):
+                        await message.channel.send(f"> connected_voice_client\n{voice_client}", reference=message, mention_author=False)
+                    return
                 elif command[0] in ["help", "?", ""]:
                     if message.author in message.channel.members:
                         try:
@@ -998,6 +1014,12 @@ class Bot(discord.Client):
 
                                     `release`  `speak_lock`  [*CHANNEL_ID*]
                                         음성 출력을 위한 잠금을 해제합니다.
+
+                                    `voice_client`|`vc`
+                                        음성 클라이언트를 확인합니다.
+
+                                    `connected_voice_client`|`cvc`
+                                        연결된 음성 클라이언트를 확인합니다.
                                     """
                                 )
                                 sutext = dedent(sutext).strip("\n")
