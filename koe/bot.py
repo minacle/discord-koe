@@ -869,6 +869,14 @@ class Bot(discord.Client):
                         await voice_client.disconnect(force=True)
                         with suppress(Exception):
                             await message.channel.send("> quit", reference=message, mention_author=False)
+                        return
+                    with suppress(Exception):
+                        voice_client = self.voice_client(message.channel, discord.VoiceClient)
+                        if voice_client:
+                            if voice_client.is_playing():
+                                voice_client.stop()
+                            await voice_client.disconnect(force=True)
+                            await message.channel.send("> quit", reference=message, mention_author=False)
                     return
                 elif command[0] in ["ping", "p"]:
                     now = datetime.now(timezone.utc)
