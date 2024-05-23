@@ -851,15 +851,14 @@ class Bot(discord.Client):
                             await message.channel.send("> stop", reference=message, mention_author=False)
                     return
                 elif command[0] in ["connect"]:
-                    if self.connected_voice_client(message.channel) is None:
-                        try:
-                            await message.author.voice.channel.connect()
-                        except discord.errors.DiscordException as e:
-                            with suppress(Exception):
-                                await message.channel.send(f"> connect\n{e}", reference=message, mention_author=False)
-                        else:
-                            with suppress(Exception):
-                                await message.channel.send("> connect", reference=message, mention_author=False)
+                    try:
+                        await message.author.voice.channel.connect()
+                    except discord.errors.DiscordException as e:
+                        with suppress(Exception):
+                            await message.channel.send(f"> connect\n{e}", reference=message, mention_author=False)
+                    else:
+                        with suppress(Exception):
+                            await message.channel.send("> connect", reference=message, mention_author=False)
                     return
                 elif command[0] in ["quit", "q!"]:
                     voice_client = self.connected_voice_client(message.channel, discord.VoiceClient)
